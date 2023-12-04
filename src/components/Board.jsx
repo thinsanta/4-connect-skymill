@@ -20,7 +20,10 @@ const Board = (props) => {
         ))}
       </div>
       {props.winner && <p className="winner">Player {props.winner} wins!</p>}
-      <Button resetGame={props.resetGame} text={"Reset Game"}/>
+      <button onClick={props.handlePreviousMove} disabled={props.state === 0 || props.winner}>
+          Previous Move
+        </button>
+        <Button resetGame={props.resetGame} text={"Reset Game"}/>
     </div>
   )
 }

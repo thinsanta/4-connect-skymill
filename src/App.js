@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useReducer, useRef } from 'react';
 import './App.css';
 import Board from './components/Board';
 
@@ -54,6 +54,7 @@ const checkWinner = (board, row, col) => {
   return false;
 };
 
+
 const App = () => {
   const [board, setBoard] = useState(() => {
     // Load the board from localStorage or create an empty board
@@ -66,6 +67,23 @@ const App = () => {
   });
 
   const [winner, setWinner] = useState(null);
+  const initialState = useRef({
+    moves: JSON.parse(localStorage.getItem('connectFourPreviousMoves')) || [],
+  });
+
+  const reducer = (state, action) => {
+    switch (action.type) {
+      case 'ADD_MOVE':
+        return { ...state, moves: [...state.moves, action.payload] };
+      case 'UNDO_MOVE':
+        return { ...state, moves: state.moves.slice(0, -1) };
+      default:
+        return state;
+    }
+  };
+
+  const [state, dispatch] = useReducer(reducer, initialState.current);
+
 
   const handleClick = (col) => {
     if (winner || board[0][col]) {
@@ -77,6 +95,8 @@ const App = () => {
     const newBoard = [...board];
     for (let i = ROWS - 1; i >= 0; i--) {
       if (!newBoard[i][col]) {
+        const newMove = { board: JSON.parse(JSON.stringify(newBoard)), player: currentPlayer };
+        dispatch({ type: 'ADD_MOVE', payload: newMove });
         newBoard[i][col] = currentPlayer;
         if (checkWinner(newBoard, i, col)) {
           setWinner(currentPlayer);
@@ -95,17 +115,31 @@ const App = () => {
     setBoard(createEmptyBoard());
     setCurrentPlayer('blue');
     setWinner(null);
+    dispatch({ type: 'RESET_MOVES' });
   };
 
+  const handlePreviousMove = () => {
+    if (state.moves.length > 0 && !winner) {
+      const lastMove = state.moves[state.moves.length - 1];
+      setBoard(lastMove.board);
+      setCurrentPlayer(lastMove.player);
+      dispatch({ type: 'UNDO_MOVE' });
+      setWinner(null);
+    }
+  };
+
+  // Update the state when one of the hooks updates
   useEffect(() => {
-    // Save the board and current player to localStorage whenever they change
     localStorage.setItem('connectFourBoard', JSON.stringify(board));
     localStorage.setItem('connectFourCurrentPlayer', currentPlayer);
-  }, [board, currentPlayer]);
+    localStorage.setItem('connectFourPreviousMoves', JSON.stringify(state.moves));
+  }, [board, currentPlayer, state.moves]);
 
   return (
     <div className="App">
-      <Board board={board} winner={winner} currentPlayer={currentPlayer} resetGame={resetGame} handleClick={handleClick}/>
+      <Board board={board} winner={winner} currentPlayer={currentPlayer} resetGame={resetGame} 
+      handleClick={handleClick} handlePreviousMove={handlePreviousMove} 
+      state={state.moves.length}/>
     </div>
   );
 };
