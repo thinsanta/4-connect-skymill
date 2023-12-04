@@ -64,6 +64,7 @@ const App = () => {
     // Load the current player from localStorage or set default value
     return localStorage.getItem('connectFourCurrentPlayer') || 'blue';
   });
+
   const [winner, setWinner] = useState(null);
 
   const handleClick = (col) => {
@@ -72,6 +73,7 @@ const App = () => {
       return;
     }
 
+    // Spreads the array to create a new one and fill it with new input.
     const newBoard = [...board];
     for (let i = ROWS - 1; i >= 0; i--) {
       if (!newBoard[i][col]) {

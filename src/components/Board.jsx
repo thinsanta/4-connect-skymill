@@ -1,4 +1,5 @@
 import React from 'react'
+import Button from './Button'
 
 const Board = (props) => {
   return (
@@ -19,7 +20,7 @@ const Board = (props) => {
         ))}
       </div>
       {props.winner && <p className="winner">Player {props.winner} wins!</p>}
-      <button onClick={props.resetGame}>Reset Game</button>
+      <Button resetGame={props.resetGame} text={"Reset Game"}/>
     </div>
   )
 }
